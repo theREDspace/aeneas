@@ -396,6 +396,7 @@ def prepare_cew_for_windows():
 IS_LINUX = (os.name == "posix") and (os.uname()[0] == "Linux")
 IS_OSX = (os.name == "posix") and (os.uname()[0] == "Darwin")
 IS_WINDOWS = (os.name == "nt")
+IS_OSX_ARM = IS_OSX and (os.uname().machine == "arm64")
 
 # define what values of environment variables are considered equal to True
 TRUE_VALUES = [
@@ -468,12 +469,18 @@ EXTENSION_CMFCC = Extension(
         get_include()
     ]
 )
+
+cew_library_dirs = None
+if IS_OSX_ARM: # On Apple Silicon we need to add the /opt/homebrew/lib so that the brew-installed espeak is found
+    cew_library_dirs = ["/opt/homebrew/lib"]
+    
 EXTENSION_CEW = Extension(
     name="aeneas.cew.cew",
     sources=[
         "aeneas/cew/cew_py.c",
         "aeneas/cew/cew_func.c"
     ],
+    library_dirs=cew_library_dirs,
     libraries=[
         "espeak"
     ]
